@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+    body {
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+
+    :root {
+        --color-brand: #059669;
+        --color-brand-hover: #047857;
+        --color-brand-light: #ecfdf5;
+        --color-brand-accent: #f59e0b;
+    }
+
+    [data-theme="rose"] {
+        --color-brand: #e11d48;
+        --color-brand-hover: #be123c;
+        --color-brand-light: #fff1f2;
+        --color-brand-accent: #f59e0b;
+    }
+
+    [data-theme="amber"] {
+        --color-brand: #d97706;
+        --color-brand-hover: #b45309;
+        --color-brand-light: #fffbeb;
+        --color-brand-accent: #059669;
+    }
+
+    [data-theme="indigo"] {
+        --color-brand: #4f46e5;
+        --color-brand-hover: #4338ca;
+        --color-brand-light: #eef2ff;
+        --color-brand-accent: #06b6d4;
+    }
+
+    [data-theme="orange"] {
+        --color-brand: #ea580c;
+        --color-brand-hover: #c2410c;
+        --color-brand-light: #fff7ed;
+        --color-brand-accent: #e11d48;
+    }
+
+    [data-theme="slate"] {
+        --color-brand: #0f172a;
+        --color-brand-hover: #1e293b;
+        --color-brand-light: #f8fafc;
+        --color-brand-accent: #84cc16;
+    }
+}
+
+/* Custom styles for 58mm thermal receipt printing */
+@media print {
+    @page {
+        margin: 0;
+        size: 58mm auto;
+    }
+    body {
+        margin: 0;
+        padding: 0;
+        background: white !important;
+        color: black !important;
+    }
+    .no-print {
+        display: none !important;
+    }
+    .print-only {
+        display: block !important;
+    }
+}
+
+/* Scrollbar styling for POS menu category scroll */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
