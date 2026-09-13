@@ -18,7 +18,7 @@ class AuthController extends Controller
     public function create(): Response
     {
         return Inertia::render('Auth/Login', [
-            'showDemoAccounts' => app()->environment('local'),
+            'showDemoAccounts' => (bool) (config('demo.enabled', false) || app()->environment('local')),
         ]);
     }
 

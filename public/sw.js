@@ -10,8 +10,6 @@ const CACHE_NAME = 'penyetan-pos-v1';
 
 // Aset statis inti untuk pre-caching saat instalasi
 const PRECACHE_ASSETS = [
-    '/',
-    '/pos',
     '/manifest.json',
     '/favicon.png',
     '/icon-192.png',
@@ -19,11 +17,17 @@ const PRECACHE_ASSETS = [
     '/apple-touch-icon.png'
 ];
 
-// Event: Install (Simpan aset inti ke cache)
+// Event: Install (Simpan aset inti ke cache secara aman)
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(PRECACHE_ASSETS);
+        caches.open(CACHE_NAME).then(async (cache) => {
+            for (const asset of PRECACHE_ASSETS) {
+                try {
+                    await cache.add(asset);
+                } catch (err) {
+                    console.warn('[SW] Gagal precache aset statis:', asset, err);
+                }
+            }
         }).then(() => self.skipWaiting())
     );
 });
@@ -59,7 +63,7 @@ self.addEventListener('fetch', (event) => {
     }
 
     // 3. Strategi Cache-First untuk aset statis (/build/*, fonts, images)
-    const isStaticAsset = 
+    const isStaticAsset =
         url.pathname.startsWith('/build/') ||
         url.pathname.match(/\.(png|jpg|jpeg|svg|webp|ico|woff2|woff|ttf|css|js)$/i) ||
         url.hostname.includes('fonts.googleapis.com') ||

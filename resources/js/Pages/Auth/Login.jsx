@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import {
     Store,
     Lock,
@@ -12,18 +12,40 @@ import {
     EyeOff,
     Sparkles,
     Sun,
-    Moon
+    Moon,
+    MessageCircle,
+    Send,
+    RefreshCw,
+    HeartHandshake,
+    BookOpen
 } from 'lucide-react';
 import { getActiveTheme } from '@/Utils/themeHelper';
 import { isDarkModeActive, toggleThemeMode } from '@/Utils/darkMode';
 
 export default function Login() {
-    const { flash, errors, store, showDemoAccounts } = usePage().props;
+    const { flash, errors, store, showDemoAccounts, demo } = usePage().props;
     const currentTheme = getActiveTheme(store?.theme_color);
 
     const storeName = store?.name || 'Pecel Lele Sedap';
     const storeInitials = store?.initials || 'PL';
     const storeTagline = store?.tagline || 'Sistem Kasir POS & Manajemen Warung';
+
+    const isDemoActive = demo?.enabled || showDemoAccounts;
+    const devName = demo?.developer_name || 'Developer';
+    const waNumber = demo?.whatsapp ? demo.whatsapp.replace(/\D/g, '') : '';
+    const telegramUser = demo?.telegram ? demo.telegram.replace('@', '') : '';
+
+    const waLink = waNumber
+        ? `https://wa.me/${waNumber}?text=${encodeURIComponent(`Halo ${devName}, saya sedang coba Demo Penyetan POS dan tertarik menggunakannya secara gratis untuk usaha saya.`)}`
+        : null;
+
+    const teleLink = telegramUser
+        ? `https://t.me/${telegramUser}`
+        : null;
+
+    const resetPeriodLabel = demo?.reset_interval === 'daily'
+        ? 'setiap hari'
+        : (demo?.reset_interval === 'every_two_hours' ? 'setiap 2 jam' : 'setiap 1 jam');
 
     const [showPassword, setShowPassword] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
@@ -88,7 +110,7 @@ export default function Login() {
                 </button>
             </div>
 
-            <div className="w-full max-w-md">
+            <div className="w-full max-w-md my-6">
                 {/* Brand Header (Dynamic Store Identity) */}
                 <div className="text-center mb-6">
                     <div className={`inline-flex items-center justify-center w-14 h-14 ${currentTheme.classes.bgPrimary} border-2 border-slate-900 dark:border-slate-700 shadow-[3px_3px_0px_0px_rgba(15,23,42,1)] dark:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] mb-3 text-white font-black text-2xl tracking-wider`}>
@@ -196,18 +218,31 @@ export default function Login() {
                             <span>{processing ? 'Memproses...' : 'Masuk ke Sistem'}</span>
                             <ArrowRight className="w-4 h-4" />
                         </button>
+
+                        <div className="pt-1 text-center">
+                            <Link
+                                href="/guide"
+                                className="inline-flex items-center space-x-1.5 text-[11px] font-black uppercase tracking-wide text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition group py-1"
+                            >
+                                <BookOpen className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition shrink-0" />
+                                <span className="underline decoration-2 underline-offset-4 decoration-amber-400">
+                                    Lihat Panduan Singkat Pemakaian
+                                </span>
+                            </Link>
+                        </div>
                     </form>
 
-                    {/* Quick Account Switcher (Hanya Aktif di Lingkungan Lokal / Dev) */}
-                    {showDemoAccounts && (
-                        <div className="pt-3 border-t-2 border-dashed border-slate-300 dark:border-slate-800">
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="text-[10px] font-extrabold uppercase tracking-wide text-slate-500 dark:text-slate-400 flex items-center space-x-1">
+                    {/* Quick Account Switcher (Aktif saat APP_DEMO_MODE=true) */}
+                    {isDemoActive && (
+                        <div className="pt-4 border-t-2 border-dashed border-slate-300 dark:border-slate-800 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="text-[10px] font-extrabold uppercase tracking-wide text-slate-700 dark:text-slate-300 flex items-center space-x-1">
                                     <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                                    <span>Akun Demo 1-Klik</span>
+                                    <span>Pilih Akun Demo (1-Klik)</span>
                                 </div>
-                                <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
-                                    Lokal Dev Only
+                                <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 flex items-center space-x-1">
+                                    <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                                    <span>Auto-Reset {resetPeriodLabel}</span>
                                 </span>
                             </div>
 
@@ -219,14 +254,14 @@ export default function Login() {
                                     className="p-2.5 bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 border-2 border-slate-900 dark:border-slate-700 text-left transition shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 group"
                                 >
                                     <div className="flex items-center justify-between mb-1">
-                                        <span className="font-black text-[11px] text-amber-950 dark:text-amber-300 uppercase">Pemilik</span>
+                                        <span className="font-black text-[11px] text-amber-950 dark:text-amber-300 uppercase">Pemilik (Owner)</span>
                                         <span className="px-1 py-0.2 bg-amber-300 border border-slate-900 text-[9px] font-extrabold text-amber-950">
-                                            FULL AKSES
+                                            FULL
                                         </span>
                                     </div>
                                     <div className="text-[10px] text-slate-600 dark:text-slate-300 font-mono truncate">owner@penyetan.com</div>
                                     <div className="text-[9px] text-slate-500 dark:text-slate-400 mt-1">
-                                        Akses POS, Kelola Menu & Analitik
+                                        POS, Menu, Kasir & Analitik
                                     </div>
                                 </button>
 
@@ -244,19 +279,74 @@ export default function Login() {
                                     </div>
                                     <div className="text-[10px] text-slate-600 dark:text-slate-300 font-mono truncate">kasir@penyetan.com</div>
                                     <div className="text-[9px] text-slate-500 dark:text-slate-400 mt-1">
-                                        Khusus Kasir POS & Riwayat
+                                        Operasional POS & Cetak Struk
                                     </div>
                                 </button>
                             </div>
+
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 italic text-center">
+                                *Password default semua akun: <span className="font-mono font-bold text-slate-800 dark:text-slate-200">password</span>
+                            </p>
                         </div>
                     )}
                 </div>
 
+                {/* Neo-Brutalist CTA Card: Hubungi Pengembang (Gratis) */}
+                {isDemoActive && (
+                    <div className="mt-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border-2 border-slate-900 dark:border-slate-700 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4 space-y-3">
+                        <div className="flex items-start space-x-2.5">
+                            <div className="p-1.5 bg-emerald-500 border border-slate-900 text-white shrink-0 mt-0.5">
+                                <HeartHandshake className="w-4 h-4" />
+                            </div>
+                            <div className="flex-1">
+                                <div className="flex items-center space-x-2">
+                                    <h2 className="text-xs font-black uppercase text-emerald-950 dark:text-emerald-300">
+                                        Tertarik Menggunakan Aplikasi Ini?
+                                    </h2>
+                                    <span className="text-[9px] font-black uppercase px-1.5 py-0.2 bg-emerald-400 text-slate-900 border border-slate-900">
+                                        GRATIS
+                                    </span>
+                                </div>
+                                <p className="text-[11px] font-medium text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
+                                    Silakan explore semua fitur kasir, bluetooth printer, dan laporan. Untuk bantuan instalasi di STB atau server warung Anda, hubungi saya langsung:
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                            {waLink && (
+                                <a
+                                    href={waLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-center space-x-2 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] uppercase tracking-wider border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-x-0.5 active:translate-y-0.5 transition"
+                                >
+                                    <MessageCircle className="w-3.5 h-3.5" />
+                                    <span>WhatsApp</span>
+                                </a>
+                            )}
+
+                            {teleLink && (
+                                <a
+                                    href={teleLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-center space-x-2 py-2 px-3 bg-sky-600 hover:bg-sky-700 text-white font-black text-[11px] uppercase tracking-wider border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-x-0.5 active:translate-y-0.5 transition"
+                                >
+                                    <Send className="w-3.5 h-3.5" />
+                                    <span>Telegram</span>
+                                </a>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Footer Notes */}
                 <div className="text-center mt-4 text-[11px] font-medium text-slate-500 dark:text-slate-500">
-                    Sistem Kasir {storeName} Modern &copy; {new Date().getFullYear()}
+                    Sistem Kasir {storeName} &copy; {new Date().getFullYear()} {isDemoActive && `• Dikelola oleh ${devName}`}
                 </div>
             </div>
         </div>
     );
 }
+

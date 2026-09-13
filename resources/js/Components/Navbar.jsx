@@ -15,7 +15,11 @@ import {
     Settings,
     Sun,
     Moon,
-    WifiOff
+    WifiOff,
+    Sparkles,
+    MessageCircle,
+    Send,
+    BookOpen
 } from 'lucide-react';
 import { connectPrinter, disconnectPrinter, getConnectedPrinterName, isPrinterConnected, isWebBluetoothSupported } from '@/Utils/BluetoothPrinterHelper';
 import { getActiveTheme } from '@/Utils/themeHelper';
@@ -23,7 +27,7 @@ import { toggleThemeMode, isDarkModeActive } from '@/Utils/darkMode';
 
 export default function Navbar({ onPrinterStatusChange }) {
     const { url } = usePage();
-    const { auth, store } = usePage().props;
+    const { auth, store, demo } = usePage().props;
     const isOwner = auth?.user?.role === 'owner';
     const currentTheme = getActiveTheme(store?.theme_color);
 
@@ -165,12 +169,64 @@ export default function Navbar({ onPrinterStatusChange }) {
     const isProducts = url.startsWith('/products');
     const isUsers = url.startsWith('/users');
     const isSettings = url.startsWith('/settings');
+    const isGuide = url.startsWith('/guide');
+
+    const devName = demo?.developer_name || 'Developer';
+    const waNumber = demo?.whatsapp ? demo.whatsapp.replace(/\D/g, '') : '';
+    const telegramUser = demo?.telegram ? demo.telegram.replace('@', '') : '';
+    const waLink = waNumber
+        ? `https://wa.me/${waNumber}?text=${encodeURIComponent(`Halo ${devName}, saya sedang coba Demo Penyetan POS dan ingin konsultasi/pasang gratis untuk usaha saya.`)}`
+        : null;
+    const teleLink = telegramUser ? `https://t.me/${telegramUser}` : null;
 
     const activeTabClass = `${currentTheme.classes.bgPrimary} text-white shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border-slate-900 dark:border-slate-700`;
     const inactiveTabClass = 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white border-slate-900 dark:border-slate-700';
 
     return (
-        <header className="no-print bg-white dark:bg-slate-900 border-b-2 border-slate-900 dark:border-slate-800 shrink-0 sticky top-0 z-40 select-none">
+        <>
+            {/* Top Demo Mode Notification Strip */}
+            {demo?.enabled && (
+                <div className="no-print bg-amber-400 dark:bg-amber-500 text-slate-950 border-b-2 border-slate-900 px-3 sm:px-6 py-1.5 flex items-center justify-between text-[11px] font-black tracking-wide z-50 relative select-none">
+                    <div className="flex items-center space-x-2 truncate">
+                        <span className="px-1.5 py-0.5 bg-slate-900 text-amber-300 uppercase text-[9px] font-black border border-slate-900 tracking-wider shrink-0 flex items-center space-x-1 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                            <Sparkles className="w-2.5 h-2.5" />
+                            <span>MODE DEMO</span>
+                        </span>
+                        <span className="truncate hidden sm:inline text-slate-950 font-extrabold">
+                            Data di-reset otomatis berkala. Mau pasang sistem ini gratis di warung Anda?
+                        </span>
+                        <span className="truncate sm:hidden text-slate-950 font-extrabold">
+                            Demo (Auto-Reset) • Pasang Gratis:
+                        </span>
+                    </div>
+                    <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0 ml-2">
+                        {waLink && (
+                            <a
+                                href={waLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2 py-0.5 bg-white hover:bg-slate-100 text-slate-900 border border-slate-900 uppercase text-[9px] font-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 transition flex items-center space-x-1"
+                            >
+                                <MessageCircle className="w-3 h-3 text-emerald-600" />
+                                <span>WhatsApp (Gratis)</span>
+                            </a>
+                        )}
+                        {teleLink && (
+                            <a
+                                href={teleLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2 py-0.5 bg-sky-100 hover:bg-sky-200 text-slate-900 border border-slate-900 uppercase text-[9px] font-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 transition flex items-center space-x-1"
+                            >
+                                <Send className="w-3 h-3 text-sky-600" />
+                                <span>Telegram</span>
+                            </a>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            <header className="no-print bg-white dark:bg-slate-900 border-b-2 border-slate-900 dark:border-slate-800 shrink-0 sticky top-0 z-40 select-none">
             <div className="w-full max-w-[1500px] mx-auto px-3 sm:px-5 lg:px-6">
                 <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
                     {/* Brand & Logo (Dynamic Store Identity) */}
@@ -253,6 +309,15 @@ export default function Navbar({ onPrinterStatusChange }) {
                         >
                             <Receipt className="w-3.5 h-3.5 shrink-0" />
                             <span>Riwayat</span>
+                        </Link>
+
+                        {/* Buku Panduan Singkat */}
+                        <Link
+                            href="/guide"
+                            className={`flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide border-2 transition whitespace-nowrap shrink-0 ${isGuide ? activeTabClass : inactiveTabClass}`}
+                        >
+                            <BookOpen className="w-3.5 h-3.5 shrink-0" />
+                            <span>Panduan</span>
                         </Link>
                     </nav>
 
@@ -468,5 +533,7 @@ export default function Navbar({ onPrinterStatusChange }) {
                 </div>
             )}
         </header>
+        </>
     );
 }
+

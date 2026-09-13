@@ -41,6 +41,13 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'store' => fn () => \App\Models\StoreSetting::current(),
+            'demo' => [
+                'enabled' => (bool) config('demo.enabled', false),
+                'developer_name' => config('demo.developer_name', 'Developer'),
+                'whatsapp' => config('demo.whatsapp', ''),
+                'telegram' => config('demo.telegram', ''),
+                'reset_interval' => config('demo.reset_interval', 'hourly'),
+            ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

@@ -115,6 +115,13 @@ SESSION_DRIVER=database
 SESSION_LIFETIME=120
 CACHE_STORE=database
 QUEUE_CONNECTION=database
+
+# Pengaturan Mode Demo & Kontak (Biarkan 'true' jika STB ini sebagai server demo)
+APP_DEMO_MODE=true
+DEMO_DEV_NAME="NamaAnda"
+DEMO_CONTACT_WA="6281234567890"        # Nomor WA tanpa '+'
+DEMO_CONTACT_TELEGRAM="username_anda"  # Username Telegram tanpa '@'
+DEMO_RESET_INTERVAL="hourly"           # 'hourly', 'every_two_hours', 'daily'
 ```
 *Simpan perubahan: Tekan `Ctrl + O`, lalu `Enter`. Keluar: Tekan `Ctrl + X`.*
 
@@ -191,6 +198,7 @@ server {
         fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
+        fastcgi_param HTTP_X_FORWARDED_PROTO $http_x_forwarded_proto;
         fastcgi_hide_header X-Powered-By;
     }
 
@@ -227,7 +235,55 @@ php artisan view:cache
 
 ---
 
-## Langkah 9: Panduan Krusial Cetak Bluetooth Thermal (Persyaratan HTTPS)
+## Langkah 9: Pasang Cron Scheduler Auto-Reset (Khusus Server Demo STB)
+
+Jika STB Anda difungsikan sebagai **Server Demo Publik**, pasang cronjob standar Laravel agar database otomatis di-reset secara berkala (misal setiap 1 jam) sehingga data tidak menumpuk dan akun demo kembali ke status default:
+
+1. Buka konfigurasi crontab di STB:
+   ```bash
+   crontab -e
+   ```
+2. Tambahkan baris cronjob berikut di paling bawah file:
+   ```cron
+   * * * * * cd /var/www/simple_pos && php artisan schedule:run >> /dev/null 2>&1
+   ```
+3. Simpan dan keluar (Ctrl+O, Enter, lalu Ctrl+X).
+
+> **💡 Catatan Developer Cerdas:**
+> Cronjob ini dikendalikan oleh Laravel via file `.env` (`APP_DEMO_MODE=true`). Ketika suatu saat Anda mematikan mode demo (`APP_DEMO_MODE=false`), Laravel **secara otomatis tidak akan mengeksekusi reset lagi** meskipun cronjob Linux tetap aktif!
+
+---
+
+## Langkah 10: Cara Beralih ke Mode Produksi Asli (Saat Klien/Warung Memakai)
+
+Ketika sistem ini hendak diserahkan ke warung nyata (Production Asli), Anda **tidak perlu mengutak-atik kode program**. Cukup ubah 1 nilai di `.env`:
+
+1. Buka file `.env` di STB:
+   ```bash
+   nano /var/www/simple_pos/.env
+   ```
+2. Ubah baris berikut:
+   ```dotenv
+   APP_ENV=production
+   APP_DEBUG=false
+   APP_DEMO_MODE=false
+   ```
+3. Segarkan cache aplikasi di STB:
+   ```bash
+   php artisan optimize:clear
+   php artisan config:cache
+   php artisan route:cache
+   php artisan view:cache
+   ```
+
+**Efek Instan Setelah `APP_DEMO_MODE=false`:**
+- ✅ Akun 1-klik di halaman login otomatis **hilang**.
+- ✅ Banner demo & tombol kontak di Navbar otomatis **hilang**.
+- ✅ Fitur auto-reset database otomatis **berhenti**, sehingga seluruh rekaman transaksi warung tersimpan aman permanen.
+
+---
+
+## Langkah 11: Panduan Krusial Cetak Bluetooth Thermal (Persyaratan HTTPS)
 
 Browser Google Chrome di tablet/HP Android **hanya mengizinkan Web Bluetooth API pada koneksi HTTPS yang aman** (atau `localhost`). Jika tablet kasir membuka via `http://192.168.1.100`, browser akan memblokir tombol koneksi printer Bluetooth.
 
